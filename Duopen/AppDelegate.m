@@ -17,12 +17,10 @@
 
 - (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename {
   
-  NSPipe *pipe = [NSPipe pipe];
   NSTask *task = [[NSTask alloc] init];
   
   task.launchPath = @"/usr/bin/open";
   task.arguments = @[@"-n", filename];
-  task.standardOutput = pipe;
 
   [task launch];
   
