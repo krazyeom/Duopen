@@ -10,7 +10,8 @@
 
 @interface AppDelegate : NSObject <NSApplicationDelegate, NSMenuDelegate>
 {
-	NSMenuItem *systemMenu;
+	NSMenu *_systemMenu;
+	NSStatusItem *_statusItem;
 }
 
 @property (assign) IBOutlet NSWindow *window;
