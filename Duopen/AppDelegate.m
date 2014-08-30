@@ -165,20 +165,35 @@
 	
 	NSWorkspace *workSpace = [NSWorkspace sharedWorkspace];
 	NSArray *applications = [workSpace runningApplications];
-	int n = 0;
-	for(NSRunningApplication *app in applications)
+	NSMutableArray *alreadyAdded = [[NSMutableArray alloc] init];
+	
+	for(int n = 0; n < [applications count] - 1; n++)
 	{
-		// We should get only regular apps except Finder app and Duopen.app itself.
-		if(	app.activationPolicy == NSApplicationActivationPolicyRegular &&		// should be regular
-		   [app.executableURL.absoluteString rangeOfString:@"Finder.app"].location == NSNotFound &&	// shoud be not Finder app
-		   ![app isEqualTo:[NSRunningApplication currentApplication]] )	// shoud be not Duopen app itself
+		NSRunningApplication *app = [applications objectAtIndex:n];
+		BOOL isAlreadyAdded = NO;
+		BOOL isRegular = app.activationPolicy == NSApplicationActivationPolicyRegular;
+		BOOL isFinderApp = [app.executableURL.absoluteString rangeOfString:@"Finder.app"].location != NSNotFound;
+		BOOL isDuopenItself = [app isEqualTo:[NSRunningApplication currentApplication]];
+		
+		// check if the same kind of app was already added into menu.
+		for(NSString *path in alreadyAdded)
 		{
-			NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:app.localizedName action:@selector(duOpen:) keyEquivalent:@""];
-			menuItem.image = app.icon;
-			menuItem.tag = n;
-			[_systemMenu addItem:menuItem];
+			if([path isEqualToString:app.executableURL.absoluteString])
+			{
+				isAlreadyAdded = YES;
+				break;
+			}
 		}
-		n++;
+		
+		// We don't need unregular app, Finder app, Duopen app itself, and already added app.
+		if(!isRegular || isFinderApp || isDuopenItself || isAlreadyAdded)
+			continue;
+		
+		NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:app.localizedName action:@selector(duOpen:) keyEquivalent:@""];
+		menuItem.image = app.icon;
+		menuItem.tag = n;
+		[_systemMenu addItem:menuItem];
+		[alreadyAdded addObject:app.executableURL.absoluteString];
 	}
 	
 	// Add "Start automatically" setting menu
